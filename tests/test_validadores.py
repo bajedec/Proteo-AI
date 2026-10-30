@@ -21,13 +21,6 @@ class TestValidarPrompt(unittest.TestCase):
 
 
 class TestValidarExtension(unittest.TestCase):
-    def test_extension_valida(self):
-        self.assertEqual(validar_extension("foto.PNG"), "foto.PNG")
-
-    def test_extension_invalida(self):
-        with self.assertRaises(ValueError):
-            validar_extension("documento.pdf")
-class TestValidarExtension(unittest.TestCase):
     """Pruebas de validar_extension: solo se permiten .png, .jpg y .jpeg."""
 
     def test_extension_valida(self):

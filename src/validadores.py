@@ -20,16 +20,7 @@ def validar_prompt(prompt):
 def validar_extension(nombre_archivo):
     """Verifica que el archivo sea una imagen permitida."""
     if not isinstance(nombre_archivo, str):
-        raise ValueError("El nombre del archivo debe ser texto")
-        
-    if not nombre_archivo.lower().endswith(EXTENSIONES_PERMITIDAS):
-        raise ValueError("Extension de archivo no permitida")
-        
-    return nombre_archivo
-
-
         raise ValueError("El nombre de archivo debe ser texto")
     if not nombre_archivo.lower().endswith(EXTENSIONES_PERMITIDAS):
         raise ValueError("Extension de archivo no permitida")
     return nombre_archivo
->>>>>>> 298beb9def03485723f1ae90a593e68edaa144d5
