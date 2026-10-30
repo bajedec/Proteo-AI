@@ -1,0 +1,95 @@
+==================================================
+PROPUESTA 2: PROTEO - CAD & 2D SKETCH GENERATOR
+==================================================
+
+# Proteo AI: Pipeline de Generación de Bocetos Técnicos y Exportación CAD (DXF / SVG)
+
+## Equipo: Baje de C++
+- Diego Isaias Gutierrez Ruiz — DevOps / CI-CD
+- Saul Adain Huillca Rodriguez — Desarrollador Frontend
+- Oscar Josue Pastor Quispe — Desarrollador Fullstack
+- Flor Camila Huallpa Cobos — QA / Testing
+- Humberto Zamora Moscoso — Desarrollador Backend
+
+---
+
+## 1. Problema
+Diseñadores, modeladores 3D, arquitectos y desarrolladores de videojuegos indie necesitan convertir fotografías reales de objetos, vehículos o estructuras en bocetos limpios y trazados vectoriales técnicos como base para su trabajo en programas de modelado (AutoCAD, Blender, Illustrator). Actualmente, este proceso de calco o delineado manual consume horas de trabajo.
+
+---
+
+## 2. Solución: Arquitectura en Pipeline (3 Fases)
+Para resolver esto de forma profesional y viable en equipos de recursos moderados, el sistema no se limita a un único filtro, sino a un pipeline integrado:
+
+1. **Preprocesamiento (Aislamiento del Objeto):**
+   - Remoción de fondos complejos o segmentación para evitar que texturas de árboles, calles o sombras ensucien el boceto.
+2. **Modelo de IA (Line Art & Geometric Contour Extraction):**
+   - Traducción de imagen a boceto técnico 2D que interpreta profundidad, siluetas y aristas semánticas.
+3. **Postprocesamiento y Vectorización (Exportación a CAD):**
+   - Algoritmo de esqueletizado y conversión de mapa de píxeles a entidades vectoriales nativas (LINE, POLYLINE) para generar archivos compatibles con software de diseño.
+
+---
+
+## 3. Especificación del Modelo de IA
+- **Categoría:** Image-to-Image (Line Art & Edge Synthesis)
+- **Modelo de Referencia Hugging Face:** [rocca/informative-drawings-line-art-onnx](https://huggingface.co/rocca/informative-drawings-line-art-onnx) (17 MB) / Informative Drawings CVPR
+- **Input:** Imagen digital (JPG, PNG) del objeto (auto, casa, producto)
+- **Output:** 
+  1. Boceto 2D en mapa de bits (PNG de alta resolución con trazos limpios).
+  2. Archivo vectorial CAD (.DXF compatible con AutoCAD, Civil3D, QCAD).
+  3. Archivo vectorial escalable (.SVG para Blender, Inkscape, Illustrator).
+- **Justificación Técnica:**
+  - A diferencia de filtros clásicos (Canny) que saturan de ruido la imagen, el modelo interpreta volúmenes y genera trazos continuos tipo dibujo técnico.
+  - Al estar optimizado en formato ONNX/PyTorch liviano (~17 MB), permite inferencia instantánea (< 0.5s) en CPUs convencionales sin requerir GPUs dedicadas de alto costo.
+
+---
+
+## 4. Dataset
+- **Nombre:** proteo-cad-sketch-dataset
+- **Registros:** 1,000 pares
+- **Estructura:**
+  - `photo`: Imagen original en formato RGB (objetos/vehículos/estructuras).
+  - `sketch`: Boceto o mapa de líneas de referencia de contornos estructurales.
+  - `file_name`: Identificador único de cada par foto-boceto.
+
+---
+
+## 5. Stack Tecnológico
+- **Lenguaje:** Python 3.10+ / 3.11
+- **Framework UI:** Gradio (interfaz web reactiva con carga de imagen y botones de descarga)
+- **IA / Inferencia:** ONNX Runtime / Hugging Face Transformers / PyTorch
+- **Procesamiento de Imágenes:** OpenCV, Pillow, NumPy
+- **Generación CAD / Vectorial:** `ezdxf` (estándar para AutoCAD DXF), `svgwrite`
+- **Testing:** `unittest` + TDD (validación de generación, integridad de DXF y formatos)
+- **CI/CD:** GitHub Actions (automatización de pruebas y linter sin sobrecargar recursos)
+
+---
+
+## 6. Estructura de Software
+ia-proteo/
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── src/
+│   ├── __init__.py
+│   ├── preprocess.py        # Aislamiento de fondo y redimensionamiento
+│   ├── model.py             # Carga e inferencia del modelo Hugging Face (ONNX/Torch)
+│   ├── vectorizer.py        # Conversión de mapa de bits a .DXF (AutoCAD) y .SVG
+│   ├── postprocess.py       # Limpieza de trazos y binarización
+│   └── app.py               # Interfaz Gradio con descargas DXF/SVG/PNG
+├── tests/
+│   ├── __init__.py
+│   ├── test_preprocess.py
+│   ├── test_model.py
+│   └── test_vectorizer.py   # Validación de sintaxis e integridad de archivos DXF
+├── training/
+│   ├── train_colab.ipynb    # Notebook para entrenamiento/fine-tuning en Colab (GPU gratis)
+│   ├── evaluate.py          # Métricas de evaluación (IoU / SSIM)
+│   └── config.json
+├── data/
+│   ├── raw/
+│   └── processed/
+├── models/                  # Pesos del modelo (ignorado en git)
+└── .github/
+    └── workflows/
+        └── ci.yml           # Pipeline de pruebas automáticas en GitHub Actions

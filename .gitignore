@@ -1,6 +1,47 @@
-__pycache__/
-*.pyc
-.coverage
-htmlcov/
+# Entornos virtuales
 venv/
-.env
+.venv/
+env/
+ENV/
+
+# Bytecode y cache de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Reportes de cobertura (Semana 11)
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# Linter y herramientas de calidad
+.flake8_cache/
+
+# Modelos de IA pesados y pesos (no subir a git)
+models/*.pth
+models/*.onnx
+models/*.bin
+models/*.safetensors
+
+# Datos crudos pesados
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Archivos temporales generados por la app y CAD
+temp/
+outputs/*.png
+outputs/*.dxf
+outputs/*.svg
+
+# Documentos y presentaciones locales
+docs/
+*.pptx
+
+# IDEs y sistemas operativos
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
