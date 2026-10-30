@@ -36,6 +36,10 @@ outputs/*.png
 outputs/*.dxf
 outputs/*.svg
 
+# Documentos y presentaciones locales
+docs/
+*.pptx
+
 # IDEs y sistemas operativos
 .vscode/
 .idea/
