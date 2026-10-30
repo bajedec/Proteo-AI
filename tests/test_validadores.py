@@ -28,6 +28,10 @@ class TestValidarExtension(unittest.TestCase):
         with self.assertRaises(ValueError):
             validar_extension("documento.pdf")
 
+    def test_extension_no_texto(self):
+        with self.assertRaises(ValueError):
+            validar_extension(12345)
+
 
 if __name__ == "__main__":
     unittest.main()

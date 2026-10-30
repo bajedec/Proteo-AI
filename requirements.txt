@@ -1,0 +1,27 @@
+# ==================================================
+# PROTEO AI - DEPENDENCIAS DEL PROYECTO
+# Construccion de Software - Universidad Continental
+# ==================================================
+
+# --- Machine Learning & Procesamiento de Imagenes ---
+numpy>=1.24.0
+Pillow>=10.0.0
+opencv-python>=4.8.0
+matplotlib>=3.7.0
+pandas>=2.0.0
+
+# --- Ecosistema Hugging Face ---
+transformers>=4.35.0
+datasets>=2.14.0
+accelerate>=0.24.0
+onnxruntime>=1.16.0
+
+# --- Vectorizacion y Exportacion CAD ---
+ezdxf>=1.1.0
+
+# --- Interfaz de Usuario (Frontend) ---
+gradio>=4.0.0
+
+# --- Testing, Cobertura y Calidad de Codigo (Semana 11) ---
+coverage>=7.0.0
+flake8>=6.0.0

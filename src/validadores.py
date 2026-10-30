@@ -17,16 +17,10 @@ def validar_prompt(prompt):
     return prompt_limpio
 
 
-# ERROR INTENCIONAL: funcion incompleta (falta la validacion)
 def validar_extension(nombre_archivo):
     """Verifica que el archivo sea una imagen permitida."""
-    # TODO: falta validar la extension
+    if not isinstance(nombre_archivo, str):
+        raise ValueError("El nombre de archivo debe ser texto")
+    if not nombre_archivo.lower().endswith(EXTENSIONES_PERMITIDAS):
+        raise ValueError("Extension de archivo no permitida")
     return nombre_archivo
-
-
-# --- VERSION COMPLETA (descomentar para arreglar el error) ---
-# def validar_extension(nombre_archivo):
-#     """Verifica que el archivo sea una imagen permitida."""
-#     if not nombre_archivo.lower().endswith(EXTENSIONES_PERMITIDAS):
-#         raise ValueError("Extension de archivo no permitida")
-#     return nombre_archivo
