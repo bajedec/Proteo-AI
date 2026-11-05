@@ -36,3 +36,12 @@ def validar_tamano_archivo(tamano_bytes):
     if tamano_bytes > TAMANO_MAXIMO_BYTES:
         raise ValueError("El archivo excede el tamano maximo permitido (10 MB)")
     return tamano_bytes
+
+
+def validar_tolerancia_rdp(valor):
+    """Valida que la tolerancia RDP sea un numero dentro del rango permitido."""
+    if isinstance(valor, bool) or not isinstance(valor, (int, float)):
+        raise ValueError("La tolerancia debe ser un numero")
+    if not 0.1 <= valor <= 10.0:
+        raise ValueError("Tolerancia fuera de rango")
+    return valor
