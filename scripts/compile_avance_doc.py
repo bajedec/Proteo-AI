@@ -80,16 +80,18 @@ if os.path.exists(rubric_img):
         width_inches=6.0
     )
 
-# 5. Sección 3: Auditoría de Commits y Trabajo Colaborativo (NUEVA SECCIÓN)
+# 5. Sección 3: Auditoría de Commits y Trabajo Colaborativo
 build_report.add_heading_1(doc, "3. Auditoría de Commits Recientes y Trabajo Colaborativo en el Repositorio")
 doc.add_paragraph(
     "El repositorio refleja un flujo de trabajo profesional y colaborativo entre los integrantes del equipo. "
     "A continuación se documentan los commits recientes que demuestran la evolución del código, "
-    "el ciclo TDD y la refactorización arquitectónica:"
+    "el ciclo TDD, la refactorización arquitectónica y la integración de tests continuos:"
 )
 
 commit_headers = ["Hash", "Autor", "Mensaje de Commit", "Impacto Técnico"]
 commit_rows = [
+    ["2edb929", "Florbyte", "actualizacion test_frontend", "Refinamiento de aserciones en pruebas de integración del frontend."],
+    ["7f8bbf4", "Saul Huillca", "docs: registrar seccion 11 con auditoria git log y motor fastdoc", "Incorporación de AGENTS.md y compilador rápido de reportes."],
     ["76d94fb", "Saul Huillca", "docs: actualizar informe con radiografia tecnica detallada del codigo", "Documentación exhaustiva línea por línea."],
     ["cbbacd2", "Saul Huillca", "docs: agregar explicacion tecnica detallada linea por linea", "Análisis de arquitectura y componentes."],
     ["30ab603", "Oscar (osc)", "refactor: [REFACTOR] ciclo TDD - extraer constantes de tolerancia RDP", "Extracción de RDP_EPSILON_MIN y RDP_EPSILON_MAX."],
