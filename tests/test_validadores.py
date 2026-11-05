@@ -95,6 +95,24 @@ class TestValidarTamanoArchivo(unittest.TestCase):
         with self.assertRaises(ValueError):
             validar_tamano_archivo(True)
 
+    def test_varios_tamanos_con_subtest(self):
+        """Refactor: prueba parametrizada con subTest para validar multiples rangos."""
+        casos = [
+            (1024, True),
+            (5 * 1024 * 1024, True),
+            (10 * 1024 * 1024, True),
+            (0, False),
+            (-50, False),
+            (11 * 1024 * 1024, False),
+        ]
+        for tamano, esperado_valido in casos:
+            with self.subTest(tamano=tamano):
+                if esperado_valido:
+                    self.assertEqual(validar_tamano_archivo(tamano), tamano)
+                else:
+                    with self.assertRaises(ValueError):
+                        validar_tamano_archivo(tamano)
+
 
 if __name__ == "__main__":
     unittest.main()
