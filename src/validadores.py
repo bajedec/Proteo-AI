@@ -3,6 +3,7 @@
 LONGITUD_MINIMA_PROMPT = 3
 LONGITUD_MAXIMA_PROMPT = 300
 EXTENSIONES_PERMITIDAS = (".png", ".jpg", ".jpeg")
+TAMANO_MAXIMO_BYTES = 10 * 1024 * 1024  # 10 MB maximo para imagenes CAD
 
 
 def validar_prompt(prompt):
@@ -24,3 +25,14 @@ def validar_extension(nombre_archivo):
     if not nombre_archivo.lower().endswith(EXTENSIONES_PERMITIDAS):
         raise ValueError("Extension de archivo no permitida")
     return nombre_archivo
+
+
+def validar_tamano_archivo(tamano_bytes):
+    """Verifica que el peso del archivo en bytes no exceda el limite permitido."""
+    if not isinstance(tamano_bytes, (int, float)) or isinstance(tamano_bytes, bool):
+        raise ValueError("El tamano del archivo debe ser un numero")
+    if tamano_bytes <= 0:
+        raise ValueError("El tamano del archivo debe ser mayor a 0 bytes")
+    if tamano_bytes > TAMANO_MAXIMO_BYTES:
+        raise ValueError("El archivo excede el tamano maximo permitido (10 MB)")
+    return tamano_bytes
