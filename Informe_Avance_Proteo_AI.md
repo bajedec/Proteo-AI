@@ -171,4 +171,182 @@ python -m uvicorn src.app:app --reload --port 8000
 Luego, abrir en el navegador: `http://localhost:8000`.
 
 ---
+
+## 10. RADIOGRAFÍA Y EXPLICACIÓN TÉCNICA DETALLADA DEL CÓDIGO (LÍNEA POR LÍNEA)
+
+Para que puedas sustentar con absoluta seguridad técnica ante cualquier pregunta del docente o jurado, a continuación se desglosa la arquitectura, propósito y funcionamiento interno de cada archivo del proyecto.
+
+```mermaid
+flowchart TD
+    subgraph Cliente ["1. Capa de Presentación (Frontend)"]
+        HTML["templates/index.html\n(Estructura y diseño Stitch)"]
+        JS["static/js/app.js\n(Eventos, drag-and-drop y fetch)"]
+    end
+
+    subgraph Servidor ["2. Capa de Aplicación (FastAPI)"]
+        APP["src/app.py\n(Endpoints, Canny, DXF, SVG)"]
+    end
+
+    subgraph Negocio ["3. Capa de Dominio y Calidad"]
+        VAL["src/validadores.py\n(Validaciones, TDD, Clean Code)"]
+    end
+
+    subgraph Pruebas ["4. Capa de Aseguramiento de Calidad"]
+        T1["tests/test_validadores.py\n(17 pruebas unitarias TDD)"]
+        T2["tests/test_frontend.py\n(7 pruebas de integración HTTP)"]
+    end
+
+    HTML <--> JS
+    JS -- "POST /api/process (FormData)" --> APP
+    APP --> VAL
+    T1 -. "Valida" .-> VAL
+    T2 -. "Valida" .-> APP
+```
+
+---
+
+### 10.1 `src/validadores.py`: La Lógica de Dominio y Validación
+* **Propósito:** Contiene las reglas puras del negocio para el saneamiento de datos de entrada antes de que toquen la memoria o el sistema de archivos del servidor.
+* **Técnica Clean Code aplicada:** **Extract Constant**. Se eliminaron todos los valores literales (*magic numbers*):
+  * `LONGITUD_MINIMA_PROMPT = 3`: Evita que el usuario envíe descripciones vacías o insignificantes.
+  * `LONGITUD_MAXIMA_PROMPT = 300`: Protege la memoria contra desbordamientos (*Buffer Overflow / DoS*).
+  * `EXTENSIONES_PERMITIDAS = ('.png', '.jpg', '.jpeg')`: Tupla inmutable que define qué archivos se aceptan.
+  * `TAMANO_MAXIMO_BYTES = 10 * 1024 * 1024` (10 MB): Límite superior de seguridad para imágenes.
+  * `TAMANO_MINIMO_BYTES = 1`: Rechaza archivos corruptos de 0 bytes.
+* **Funciones analizadas:**
+  * `validar_prompt(prompt)`: 
+    1. Verifica que la entrada sea de tipo `str` (`isinstance`). Si no lo es, lanza `ValueError("El prompt debe ser texto")`.
+    2. Ejecuta `.strip()` para limpiar espacios al inicio y final.
+    3. Evalúa los límites inferior y superior. Si los incumple, dispara excepciones informativas.
+  * `validar_extension(nombre_archivo)`:
+    1. Valida tipo de dato (`isinstance(nombre_archivo, str)`).
+    2. Convierte el nombre a minúsculas (`.lower()`) y usa `.endswith(EXTENSIONES_PERMITIDAS)`. Esto permite aceptar archivos como `FOTO.PNG` sin problemas pero rechaza `documento.pdf` o ataques de extensión oculta como `foto.png.exe`.
+  * `validar_tamano_archivo(tamano_bytes)`:
+    1. Se implementó mediante el ciclo **TDD (Red-Green-Refactor)**.
+    2. Rechaza valores no numéricos (`int`, `float`), tamaños negativos o iguales a cero, y tamaños que superen los 10 MB.
+
+---
+
+### 10.2 `src/app.py`: El Controlador Web y Motor de Simulación CAD
+* **Propósito:** Es el servidor web del Frontend construido sobre **FastAPI**. Orquesta la recepción de peticiones HTTP, renderiza las vistas y realiza la conversión matemática de píxeles a planos de AutoCAD y vectores SVG.
+* **Componentes clave analizados:**
+  * **Configuración del Servidor:**
+    ```python
+    app = FastAPI(title="Proteo AI: Technical Sketch & CAD Studio")
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+    templates = Jinja2Templates(directory=TEMPLATES_DIR)
+    ```
+    Sirve los activos estáticos (CSS, JS, imágenes de muestra) y las plantillas HTML con Jinja2.
+  * **Constantes de Procesamiento (Clean Code):**
+    Oscar y el equipo definieron constantes como `MAX_DIMENSION_PIXELS = 768`, `CANNY_THRESHOLD_LOW = 50`, `CANNY_THRESHOLD_HIGH = 150`, `CAD_LAYER_NAME = "PROTEO_TRAZOS"`, `CAD_UNITS_MM = 4`. Si el día de mañana se requiere calibrar la sensibilidad o la escala de AutoCAD, se cambia en la cabecera sin tocar los algoritmos.
+  * **Endpoint `GET /`:**
+    ```python
+    @app.get("/", response_class=HTMLResponse)
+    async def index(request: Request):
+        return templates.TemplateResponse(request=request, name="index.html")
+    ```
+    Renderiza la estación de trabajo principal del Frontend usando la sintaxis moderna de Starlette.
+  * **Endpoint `GET /health`:**
+    Devuelve un JSON con el estado del sistema, el rol (Frontend) y los créditos de Saul Huillca para propósitos de observabilidad y monitoreo.
+  * **Endpoint `POST /api/process` (El corazón del cascarón funcional):**
+    1. **Validación:** Llama a `validar_extension(file.filename)` y `validar_tamano_archivo(len(contents))`. Si fallan, devuelve `HTTP 400 Bad Request` controlado sin tumbar el servidor.
+    2. **Generación de ID único:** Utiliza `uuid.uuid4()[:8]` para que cada usuario tenga nombres de archivo únicos (`boceto_a1b2c3d4.png`, `plano_a1b2c3d4.dxf`), evitando colisiones de concurrencia.
+    3. **Preprocesamiento con OpenCV:**
+       - Redimensiona la imagen conservando la proporción de aspecto con `cv2.resize` e interpolación `INTER_AREA`.
+       - Convierte a escala de grises (`cv2.cvtColor(..., cv2.COLOR_BGR2GRAY)`).
+       - Aplica un **Filtro Bilateral** (`cv2.bilateralFilter(gray, 9, 75, 75)`): *¿Por qué bilateral y no Gaussiano?* Porque el filtro bilateral suaviza las texturas planas (elimina ruido) pero **conserva los bordes afilados** de la carrocería o paredes.
+       - Aplica el detector de bordes **Canny** (`cv2.Canny`) para aislar el contorno estructural.
+       - Invierte los colores con `cv2.bitwise_not` para generar el dibujo lineal en blanco y negro (trazos oscuros sobre fondo blanco) y lo guarda en `.png`.
+    4. **Generación del Plano de AutoCAD con `ezdxf`:**
+       ```python
+       doc = ezdxf.new("R2010")
+       doc.header['$INSUNITS'] = 4  # 4 = Milímetros en estándar CAD
+       msp = doc.modelspace()
+       doc.layers.add(name="PROTEO_TRAZOS", color=7)
+       ```
+       - Extrae los contornos de la imagen con `cv2.findContours`.
+       - Aplica el algoritmo **Ramer-Douglas-Peucker (`cv2.approxPolyDP`)** para simplificar curvas en polilíneas vectoriales limpias.
+       - **Inversión del eje Y:** En gráficos rasterizados (pantalla), el origen $(0,0)$ está arriba a la izquierda y el eje $Y$ crece hacia abajo. En AutoCAD, el origen está abajo y el eje $Y$ crece hacia arriba. El código calcula `float(alto - pt[0][1])` para que el plano se dibuje al derecho en AutoCAD.
+       - Inserta entidades nativas `msp.add_lwpolyline(...)` y guarda el archivo `.dxf`.
+    5. **Generación del Archivo SVG:**
+       Construye el XML nativo de W3C con elementos `<polygon points="...">`, apto para abrirse en Blender o navegadores web.
+    6. **Telemetría:** Mide el tiempo con `time.perf_counter()` y devuelve un JSON con la latencia en segundos, la cantidad de polilíneas generadas y los enlaces a las descargas.
+  * **Endpoint `GET /api/download/{filename}`:**
+    Sanitiza el nombre del archivo con `os.path.basename` para prevenir vulnerabilidades de escape de directorios (*Directory Traversal Attack*), asigna los MIME types oficiales (`application/dxf`, `image/svg+xml`, `image/png`) y retorna un `FileResponse`.
+
+---
+
+### 10.3 `templates/index.html`: La Estación de Trabajo Google Stitch
+* **Propósito:** Es la interfaz gráfica responsiva construida con Tailwind CSS, tipografías técnicas (`Geist` y `JetBrains Mono`) y símbolos de Google Material Icons.
+* **Estructura semántica:**
+  * `<header>`: Barra de navegación fija con el logo de Proteo AI, el indicador animado de motor CPU (`animate-ping`), los créditos del equipo (*Baje de C++*) y de Saul Huillca (Frontend).
+  * `<aside class="w-14">`: Barra de herramientas vertical estilo software CAD (iconos de selección, curvas spline, capas y reglas).
+  * `<aside class="xl:w-[350px]">` (Panel de Control Izquierdo):
+    * `#dropzone`: Zona de carga punteada (*dashed border*) que escucha eventos de arrastre.
+    * `#toggleBg`: Switch interactivo para activar el aislamiento de fondo.
+    * Botones `.style-preset-btn`: Selector de estilo con atributos `data-preset="blueprint"`, `"minimal"`, `"manga"`.
+    * `#lineWeightInput` y `#rdpInput`: Sliders HTML5 con eventos `input` vinculados a etiquetas numéricas en tiempo real.
+    * `#runAiBtn`: Botón principal de acción con efecto de pulsación y sombra resplandeciente (*box-shadow luminescence*).
+  * `<section>` (Visor Central y Exportación):
+    * `#viewportContainer`: Grilla responsiva de 2 columnas que contiene `#previewInput` (foto original) y `#previewOutput` (boceto técnico).
+    * Cápsula HUD flotante: Muestra la telemetría en vivo (`#statLatency`, `#statPolylines`, `#statStatus`).
+    * Tarjetas Bento de Exportación: 3 tarjetas independientes para AutoCAD DXF, Vector SVG y Boceto PNG con botones de descarga directa.
+  * `<footer>`: Barra de telemetría inferior con memoria RAM estimada (~150 MB), motor de ingesta y créditos de autoría.
+
+---
+
+### 10.4 `static/js/app.js`: El Controlador Dinámico del Cliente
+* **Propósito:** Maneja el estado reactivo en el navegador sin recargar la página, capturando eventos y comunicándose asíncronamente con la API de FastAPI.
+* **Módulos internos explicados:**
+  * **Gestión de Sliders:** Escucha el evento `input` en tiempo real y actualiza el texto adyacente (`1.50 pt`, `ε = 1.20`) para dar retroalimentación visual al usuario antes de procesar.
+  * **Selección de Presets:** Al hacer clic en un estilo (CAD, Mínimo o Manga), desactiva las clases CSS de los otros botones y activa el borde celeste brillante en el seleccionado, actualizando la variable `activePreset`.
+  * **Manejo de Arrastrar y Soltar (Drag & Drop):**
+    - Previene el comportamiento por defecto del navegador en `dragenter`, `dragover`, `dragleave`, `drop`.
+    - Al soltar la imagen o seleccionarla con el explorador, la valida contra la lista de extensiones permitidas.
+    - Utiliza la API nativa de JavaScript `FileReader` (`readAsDataURL`) para proyectar la imagen en el lienzo izquierdo inmediatamente, sin esperar a que suba al servidor.
+  * **Llamada Asíncrona `fetch('/api/process')`:**
+    - Empaqueta el archivo y los parámetros en un objeto `FormData`.
+    - Cambia el texto del botón a `"PROCESANDO EN CPU..."`, deshabilita el botón para evitar envíos dobles y activa la animación del HUD.
+    - Envía la petición `POST`. Al recibir la respuesta exitosa en JSON:
+      1. Reemplaza la imagen del lienzo derecho con el resultado (`previewOutput.src = result.sketch_url`).
+      2. Actualiza los valores de la cápsula HUD con la latencia real y la cantidad de polilíneas CAD generadas.
+      3. Habilita los botones de descarga asignando las URLs correspondientes (`window.location.href = result.dxf_url`).
+    - Si ocurre un error (ej. archivo no válido), captura la excepción con `try/catch`, muestra un mensaje comprensible al usuario y restablece el estado del botón.
+
+---
+
+### 10.5 `tests/test_validadores.py` y `tests/test_frontend.py`: Pruebas Unitarias y TDD
+* **`tests/test_validadores.py` (17 tests):**
+  * `TestValidarPrompt`: Prueba prompts válidos (comprobando que `.strip()` funcione), rechazo de tipos no textuales (`assertRaises(ValueError)`), prompts con menos de 3 caracteres y textos mayores a 300 caracteres.
+  * `TestValidarExtension`: Prueba extensiones válidas en mayúsculas y minúsculas (`.PNG`, `.jpg`, `.jpeg`), rechazo de documentos PDF y archivos de texto plano, archivos sin extensión y archivos con doble extensión maliciosa.
+  * `TestValidarTamanoArchivo` (**Evidencia de TDD**): Prueba tamaños válidos (500 KB), el límite exacto (10 MB), tamaños cero o negativos, tipos no numéricos y utiliza `self.subTest(...)` para validar 5 rangos de tamaño en una sola prueba parametrizada sin duplicación de código.
+* **`tests/test_frontend.py` (7 tests):**
+  * Utiliza `fastapi.testclient.TestClient(app)`, lo que permite probar los endpoints HTTP en memoria a alta velocidad sin necesidad de abrir un puerto real ni levantar un navegador externo.
+  * `_crear_imagen_dummy()`: Genera imágenes sintéticas en memoria usando `Pillow` y `io.BytesIO()`. Esto aísla las pruebas de los archivos del disco duro (evitando dependencias frágiles).
+  * `test_home_page_renders_successfully`: Valida que `GET /` devuelva código 200 y contenga las etiquetas maestras del proyecto.
+  * `test_process_invalid_file_extension`: Valida que subir un `.pdf` devuelva error 400 con el mensaje de excepción esperado.
+  * `test_process_empty_file`: Valida que un archivo de 0 bytes retorne error 400.
+  * `test_process_valid_image`: Valida que una imagen válida retorne código 200, genere enlaces a `.dxf`, `.svg`, `.png` y calcule latencia.
+  * `test_download_valid_generated_file`: Comprueba el ciclo completo: sube una imagen y luego descarga con éxito el archivo `.dxf` generado.
+
+---
+
+### 10.6 `.coveragerc` y `.github/workflows/ci.yml`: Infraestructura y Calidad Continua
+* **`.coveragerc`:**
+  * Define la carpeta fuente a inspeccionar (`source = src`).
+  * Omite las carpetas que no son código de producción (`omit = tests/*, venv/*`).
+  * `show_missing = True`: Le indica a la herramienta que en el reporte por terminal imprima exactamente los números de línea que no fueron alcanzados por ninguna prueba unitaria.
+  * `fail_under = 60`: Es el umbral de aprobación. Si la cobertura global cae por debajo de 60%, el comando termina con código de error 1.
+* **`.github/workflows/ci.yml`:**
+  * Se activa automáticamente en los eventos `push` y `pull_request` dirigidos a `main` y `develop`.
+  * Utiliza `actions/checkout@v4` y `actions/setup-python@v5` para instanciar Python 3.11 en una máquina virtual de Ubuntu en la nube de GitHub.
+  * Instala dependencias de `requirements.txt` y ejecuta:
+    ```bash
+    python -m coverage run -m unittest discover -s tests -v
+    python -m coverage report --fail-under=60
+    python -m coverage html
+    ```
+  * Si alguna prueba falla o la cobertura cae al 59%, el robot de GitHub rechaza el commit y lo marca en rojo, garantizando que el repositorio siempre se mantenga con calidad de producción.
+
+---
 *Construcción de Software — Ciclo VII — Universidad Continental*
