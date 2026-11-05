@@ -55,7 +55,7 @@ La interfaz fue concebida en **Google Stitch** bajo el concepto de *Telemetry & 
    - Zona reactiva de arrastrar y soltar con validación en tiempo de ejecución.
    - Switch de preprocesamiento para aislar el sujeto y remover gradientes de fondo.
    - Selector de estilo de topología: *Plano CAD*, *Mínimo* y *Manga Ink*.
-   - Controles deslizantes (*Sliders*) para calibrar el grosor del trazo y la tolerancia del algoritmo Ramer-Douglas-Peucker ($\epsilon$).
+   - Controles deslizantes (*Sliders*) para calibrar el grosor del trazo y la tolerancia del algoritmo Ramer-Douglas-Peucker (ε).
 
 2. **Visor Central Dual (Viewport):**
    - Modos de visualización: comparativa lado a lado (*Side-by-Side*) y vista de trazo único.
@@ -151,7 +151,7 @@ Se integró un flujo de integración continua en `.github/workflows/ci.yml` que 
 | :--- | :--- | :--- | :---: |
 | **S9: Tests Unitarios y Estructura** | Carpeta `tests/` con `test_*.py`, `unittest.TestCase`, todos los tests pasan y cubren casos límite. | 24 tests pasan en 0.76s; cubre casos de error, bordes y tipos. | **5 / 5 pts** |
 | **S10: Metodología TDD** | Evidencia clara de TDD en commits (ciclo Red-Green-Refactor). | Commits explícitos `1b4269b` (RED), `73aa1cc` (GREEN), `10db2ec` (REFACTOR). | **5 / 5 pts** |
-| **S11: Cobertura de Código** | `.coveragerc` configurado, cobertura $\ge 60\%$ y reporte HTML generado. | `.coveragerc` con fail_under=60; **92% de cobertura**; `htmlcov/` activo. | **5 / 5 pts** |
+| **S11: Cobertura de Código** | `.coveragerc` configurado, cobertura ≥ 60% y reporte HTML generado. | `.coveragerc` con fail_under=60; **92% de cobertura**; `htmlcov/` activo. | **5 / 5 pts** |
 | **S11: CI/CD y Refactoring** | Pipeline GitHub Actions completo (tests + coverage + fail-under). Sin magic numbers. | Pipeline automatizado en `.github/workflows/ci.yml`; constantes globales. | **5 / 5 pts** |
 | **TOTAL PROYECTADO** | | | **20 / 20 pts** |
 
@@ -266,7 +266,7 @@ flowchart TD
        ```
        - Extrae los contornos de la imagen con `cv2.findContours`.
        - Aplica el algoritmo **Ramer-Douglas-Peucker (`cv2.approxPolyDP`)** para simplificar curvas en polilíneas vectoriales limpias.
-       - **Inversión del eje Y:** En gráficos rasterizados (pantalla), el origen $(0,0)$ está arriba a la izquierda y el eje $Y$ crece hacia abajo. En AutoCAD, el origen está abajo y el eje $Y$ crece hacia arriba. El código calcula `float(alto - pt[0][1])` para que el plano se dibuje al derecho en AutoCAD.
+       - **Inversión del eje Y:** En gráficos rasterizados (pantalla), el origen (0, 0) está arriba a la izquierda y el eje Y crece hacia abajo. En AutoCAD, el origen está abajo y el eje Y crece hacia arriba. El código calcula `float(alto - pt[0][1])` para que el plano se dibuje al derecho en AutoCAD.
        - Inserta entidades nativas `msp.add_lwpolyline(...)` y guarda el archivo `.dxf`.
     5. **Generación del Archivo SVG:**
        Construye el XML nativo de W3C con elementos `<polygon points="...">`, apto para abrirse en Blender o navegadores web.
@@ -347,6 +347,47 @@ flowchart TD
     python -m coverage html
     ```
   * Si alguna prueba falla o la cobertura cae al 59%, el robot de GitHub rechaza el commit y lo marca en rojo, garantizando que el repositorio siempre se mantenga con calidad de producción.
+
+---
+## 11. Auditoría de Cambios Recientes en el Repositorio y Trabajo Colaborativo
+
+### 11.1 Registro Cronológico de Commits Recientes
+
+| Hash | Autor | Mensaje de Commit | Tipo de Cambio | Impacto en Rúbrica |
+| :---: | :---: | :--- | :---: | :---: |
+| `76d94fb` | Saul Huillca | docs: actualizar informe con radiografia tecnica detallada del codigo | Documentación | Rúbrica General |
+| `cbbacd2` | Saul Huillca | docs: agregar explicacion tecnica detallada linea por linea del codigo fuente | Documentación | Rúbrica General |
+| `30ab603` | Oscar (osc) | refactor: [REFACTOR] ciclo TDD - extraer constantes de tolerancia RDP | Refactorización | S10 (TDD) + S11 (Refactor) |
+| `0455c8f` | Oscar (osc) | feat: [GREEN] ciclo TDD - implementar validar_tolerancia_rdp | Funcionalidad | S9 (Tests) + S10 (TDD) |
+| `01a973a` | Oscar (osc) | test: [RED] ciclo TDD - pruebas para validar_tolerancia_rdp | Pruebas Unitarias | S9 (Tests) + S10 (TDD) |
+| `c5a9b87` | Saul Huillca | docs: actualizar informe con metricas a 91% de cobertura y estilo PEP8 | Calidad / Linter | S11 (CI/CD) + PEP8 |
+| `420f38e` | Oscar (osc) | refactor: elimina numeros magicos en app.py | Refactorización | S11 (Refactoring) |
+| `10db2ec` | Saul Huillca | refactor: [REFACTOR] ciclo TDD - parametrizar validacion de tamano de archivo con subTest | Refactorización | S10 (TDD) + S11 (Refactor) |
+| `73aa1cc` | Saul Huillca | feat: [GREEN] ciclo TDD - implementar validar_tamano_archivo para superar las pruebas | Funcionalidad | S9 (Tests) + S10 (TDD) |
+| `1b4269b` | Saul Huillca | test: [RED] ciclo TDD - agregar pruebas unitarias para validar_tamano_archivo | Pruebas Unitarias | S9 (Tests) + S10 (TDD) |
+
+---
+
+### 11.2 Análisis Técnico de las Modificaciones en el Repositorio
+
+1. **Doble Evidencia Formal de TDD (Ciclo Red-Green-Refactor):**
+   * **Ciclo 1 (Desarrollado por Saul Huillca):** Implementación de `validar_tamano_archivo`. Se creó primero la prueba unitaria fallida (`test: [RED]`), luego la función mínima requerida (`feat: [GREEN]`) y finalmente se refactorizó con pruebas parametrizadas utilizando `self.subTest(...)` (`refactor: [REFACTOR]`).
+   * **Ciclo 2 (Desarrollado por Oscar):** Implementación de `validar_tolerancia_rdp`. Se crearon los tests de límite y tipos (`test: [RED]`), la lógica en `validar_tolerancia_rdp` (`feat: [GREEN]`) y la extracción de constantes `RDP_EPSILON_MIN` y `RDP_EPSILON_MAX` (`refactor: [REFACTOR]`).
+
+2. **Refactorización de Números Mágicos (Criterio S11):**
+   * En el commit `420f38e`, se extrajeron todos los valores hardcodeados en `src/app.py` hacia constantes descriptivas en mayúsculas:
+     * Constantes de Canny: `CANNY_LOW_DEFAULT`, `CANNY_HIGH_DEFAULT`, `CANNY_APERTURE_SIZE`.
+     * Constantes de Contorno: `CONTOUR_AREA_MIN`, `CONTOUR_RETRIEVAL_MODE`, `CONTOUR_APPROX_METHOD`.
+     * Constantes de Renderizado CAD: `DXF_HEADER_VERSION`, `DXF_POLYLINE_LAYER`, `SVG_STROKE_WIDTH`, `SVG_DEFAULT_COLOR`.
+
+3. **Incorporación de Reglas de Proyecto (`AGENTS.md`):**
+   * Se institucionalizó el archivo de estándares `AGENTS.md` en la raíz del repositorio, blindando la cobertura obligatoria en ≥ 60%, el linteo sin advertencias con `flake8` y el desacoplamiento del rol de Frontend Developer.
+
+4. **Estado Consolidado Actual:**
+   * **Total de Pruebas Unitarias:** 28 tests pasando (100% de éxito en 0.75 segundos).
+   * **Cobertura de Código:** 92% global (100% en validadores, 89% en frontend/app).
+   * **Linter Flake8:** 0 errores de estilo con límite estricto de 120 caracteres.
+   * **Git Tree:** Sincronizado y limpio con `origin/main`.
 
 ---
 *Construcción de Software — Ciclo VII — Universidad Continental*
