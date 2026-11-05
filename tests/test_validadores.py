@@ -4,6 +4,7 @@ from src.validadores import (
     validar_extension,
     validar_prompt,
     validar_tamano_archivo,
+    validar_tolerancia_rdp,
 )
 
 
@@ -112,6 +113,27 @@ class TestValidarTamanoArchivo(unittest.TestCase):
                 else:
                     with self.assertRaises(ValueError):
                         validar_tamano_archivo(tamano)
+
+
+class TestValidarToleranciaRdp(unittest.TestCase):
+    """Ciclo TDD: la tolerancia RDP debe ser numerica y estar en rango."""
+
+    def test_tolerancia_valida(self):
+        self.assertEqual(validar_tolerancia_rdp(1.2), 1.2)
+
+    def test_limites_exactos(self):
+        self.assertEqual(validar_tolerancia_rdp(0.1), 0.1)
+        self.assertEqual(validar_tolerancia_rdp(10), 10)
+
+    def test_tolerancia_no_numerica(self):
+        for valor in ("1.2", None, True):
+            with self.assertRaises(ValueError):
+                validar_tolerancia_rdp(valor)
+
+    def test_tolerancia_fuera_de_rango(self):
+        for valor in (0, 0.05, 50, -1):
+            with self.assertRaises(ValueError):
+                validar_tolerancia_rdp(valor)
 
 
 if __name__ == "__main__":
