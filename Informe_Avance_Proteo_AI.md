@@ -21,7 +21,7 @@
 
 El presente informe detalla el progreso técnico consolidado en el desarrollo de **Proteo AI**, una plataforma orientada a ilustradores, modeladores 3D y diseñadores que automatiza la conversión de fotografías reales de objetos, estructuras y vehículos en **bocetos 2D (Line Art) y trazados vectoriales técnicos compatibles con AutoCAD (.DXF), Blender/Web (.SVG) e imágenes de alta definición (.PNG)**.
 
-En estricto cumplimiento con la rúbrica oficial del curso (**Taller 3.4 — Avance Proyecto Final**), se ha consolidado el **Módulo Frontend**: una estación de trabajo CAD interactiva (*Aerospace Dark CAD Workstation*), desarrollada con **FastAPI, Tailwind CSS y JavaScript**, validada bajo la metodología **TDD (Test-Driven Development)** y alcanzando un **91% de cobertura de pruebas unitarias**, superando con honores el umbral exigido del 60% establecido en la **Semana 11** de la asignatura.
+En estricto cumplimiento con la rúbrica oficial del curso (**Taller 3.4 — Avance Proyecto Final**), se ha consolidado el **Módulo Frontend**: una estación de trabajo CAD interactiva (*Aerospace Dark CAD Workstation*), desarrollada con **FastAPI, Tailwind CSS y JavaScript**, validada bajo la metodología **TDD (Test-Driven Development)** y alcanzando un **92% de cobertura de pruebas unitarias**, superando con honores el umbral exigido del 60% establecido en la **Semana 11** de la asignatura.
 
 ---
 
@@ -128,9 +128,9 @@ python -m coverage report -m
 | :--- | :---: | :---: | :---: | :---: |
 | `src/validadores.py` | 27 | 0 | **100%** | Aprobado |
 | `src/app.py` (Frontend Web) | 132 | 14 | **89%** | Aprobado |
-| **TOTAL GLOBAL DEL PROYECTO** | **159** | **14** | **91%** | **EXCELENTE** |
+| **TOTAL GLOBAL DEL PROYECTO** | **167** | **14** | **92%** | **EXCELENTE** |
 
-- **Total de pruebas unitarias ejecutadas:** **24 tests** (17 de validaciones y TDD + 7 de rutas y servicios frontend).
+- **Total de pruebas unitarias ejecutadas:** **28 tests** (21 de validaciones y TDD + 7 de rutas y servicios frontend).
 - **Tiempo total de ejecución de pruebas:** 0.766 segundos.
 - **Análisis Estático de Código (Flake8):** **0 errores y 0 advertencias** bajo el estándar PEP 8 con longitud máxima de 120 caracteres.
 
@@ -151,7 +151,7 @@ Se integró un flujo de integración continua en `.github/workflows/ci.yml` que 
 | :--- | :--- | :--- | :---: |
 | **S9: Tests Unitarios y Estructura** | Carpeta `tests/` con `test_*.py`, `unittest.TestCase`, todos los tests pasan y cubren casos límite. | 24 tests pasan en 0.76s; cubre casos de error, bordes y tipos. | **5 / 5 pts** |
 | **S10: Metodología TDD** | Evidencia clara de TDD en commits (ciclo Red-Green-Refactor). | Commits explícitos `1b4269b` (RED), `73aa1cc` (GREEN), `10db2ec` (REFACTOR). | **5 / 5 pts** |
-| **S11: Cobertura de Código** | `.coveragerc` configurado, cobertura $\ge 60\%$ y reporte HTML generado. | `.coveragerc` con fail_under=60; **91% de cobertura**; `htmlcov/` activo. | **5 / 5 pts** |
+| **S11: Cobertura de Código** | `.coveragerc` configurado, cobertura $\ge 60\%$ y reporte HTML generado. | `.coveragerc` con fail_under=60; **92% de cobertura**; `htmlcov/` activo. | **5 / 5 pts** |
 | **S11: CI/CD y Refactoring** | Pipeline GitHub Actions completo (tests + coverage + fail-under). Sin magic numbers. | Pipeline automatizado en `.github/workflows/ci.yml`; constantes globales. | **5 / 5 pts** |
 | **TOTAL PROYECTADO** | | | **20 / 20 pts** |
 
