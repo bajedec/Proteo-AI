@@ -3,6 +3,8 @@
 LONGITUD_MINIMA_PROMPT = 3
 LONGITUD_MAXIMA_PROMPT = 300
 EXTENSIONES_PERMITIDAS = (".png", ".jpg", ".jpeg")
+TOLERANCIA_RDP_MINIMA = 0.1
+TOLERANCIA_RDP_MAXIMA = 10.0
 TAMANO_MAXIMO_BYTES = 10 * 1024 * 1024  # 10 MB maximo para imagenes CAD
 
 
@@ -42,6 +44,6 @@ def validar_tolerancia_rdp(valor):
     """Valida que la tolerancia RDP sea un numero dentro del rango permitido."""
     if isinstance(valor, bool) or not isinstance(valor, (int, float)):
         raise ValueError("La tolerancia debe ser un numero")
-    if not 0.1 <= valor <= 10.0:
+    if not TOLERANCIA_RDP_MINIMA <= valor <= TOLERANCIA_RDP_MAXIMA:
         raise ValueError("Tolerancia fuera de rango")
     return valor
