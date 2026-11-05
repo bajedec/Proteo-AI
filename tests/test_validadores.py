@@ -1,6 +1,10 @@
 import unittest
 
-from src.validadores import validar_extension, validar_prompt
+from src.validadores import (
+    validar_extension,
+    validar_prompt,
+    validar_tamano_archivo,
+)
 
 
 class TestValidarPrompt(unittest.TestCase):
@@ -55,6 +59,41 @@ class TestValidarExtension(unittest.TestCase):
     def test_extension_no_texto(self):
         with self.assertRaises(ValueError):
             validar_extension(12345)
+
+
+class TestValidarTamanoArchivo(unittest.TestCase):
+    """Pruebas de validar_tamano_archivo: peso maximo permitido 10 MB."""
+
+    def test_tamano_valido(self):
+        """Un archivo de 500 KB debe ser aceptado."""
+        self.assertEqual(validar_tamano_archivo(1024 * 500), 1024 * 500)
+
+    def test_tamano_limite_exacto(self):
+        """El limite exacto de 10 MB es aceptado."""
+        limite = 10 * 1024 * 1024
+        self.assertEqual(validar_tamano_archivo(limite), limite)
+
+    def test_tamano_excede_limite(self):
+        """Un archivo mayor a 10 MB debe lanzar ValueError."""
+        limite_excedido = (10 * 1024 * 1024) + 1
+        with self.assertRaises(ValueError):
+            validar_tamano_archivo(limite_excedido)
+
+    def test_tamano_cero_o_negativo(self):
+        """Un archivo vacio o con tamano negativo debe lanzar ValueError."""
+        with self.assertRaises(ValueError):
+            validar_tamano_archivo(0)
+        with self.assertRaises(ValueError):
+            validar_tamano_archivo(-100)
+
+    def test_tamano_no_numerico(self):
+        """Tipos de datos invalidos deben lanzar ValueError."""
+        with self.assertRaises(ValueError):
+            validar_tamano_archivo("10MB")
+        with self.assertRaises(ValueError):
+            validar_tamano_archivo(None)
+        with self.assertRaises(ValueError):
+            validar_tamano_archivo(True)
 
 
 if __name__ == "__main__":
