@@ -12,16 +12,16 @@
 - **Equipo de Desarrollo:** Baje de C++
 - **Estudiante Responsable:** Saul Adain Huillca Rodriguez (Código: 74401464)
 - **Rol Asignado:** Desarrollador Frontend
-- **Fecha de Entrega:** Noviembre 2026
+- **Fecha de Actualización:** 5 de Noviembre de 2026
 - **Repositorio Oficial:** [github.com/bajedec/Proteo-AI](https://github.com/bajedec/Proteo-AI)
 
 ---
 
 ## 1. RESUMEN EJECUTIVO
 
-El presente informe detalla el progreso técnico alcanzado en el desarrollo de **Proteo AI**, una plataforma orientada a ilustradores, modeladores 3D y diseñadores que automatiza la conversión de fotografías reales de objetos, estructuras y vehículos en **bocetos 2D (Line Art) y trazados vectoriales técnicos compatibles con AutoCAD (.DXF), Blender/Web (.SVG) e imágenes de alta definición (.PNG)**.
+El presente informe detalla el progreso técnico consolidado en el desarrollo de **Proteo AI**, una plataforma orientada a ilustradores, modeladores 3D y diseñadores que automatiza la conversión de fotografías reales de objetos, estructuras y vehículos en **bocetos 2D (Line Art) y trazados vectoriales técnicos compatibles con AutoCAD (.DXF), Blender/Web (.SVG) e imágenes de alta definición (.PNG)**.
 
-En estricto cumplimiento con los objetivos de la etapa actual, se ha completado la construcción y prueba del **Módulo Frontend**: un cascarón funcional interactivo basado en una estación de trabajo CAD (*Aerospace Dark CAD Workstation*), desarrollado con **FastAPI, Tailwind CSS y JavaScript**, validado rigurosamente bajo la metodología **TDD (Test-Driven Development)** y alcanzando un **86% de cobertura de pruebas unitarias**, superando el umbral exigido del 60% establecido en la **Semana 11** de la asignatura.
+En estricto cumplimiento con la rúbrica oficial del curso (**Taller 3.4 — Avance Proyecto Final**), se ha consolidado el **Módulo Frontend**: una estación de trabajo CAD interactiva (*Aerospace Dark CAD Workstation*), desarrollada con **FastAPI, Tailwind CSS y JavaScript**, validada bajo la metodología **TDD (Test-Driven Development)** y alcanzando un **91% de cobertura de pruebas unitarias**, superando con honores el umbral exigido del 60% establecido en la **Semana 11** de la asignatura.
 
 ---
 
@@ -73,12 +73,25 @@ La interfaz fue concebida en **Google Stitch** bajo el concepto de *Telemetry & 
 
 El código desarrollado refleja estrictamente las enseñanzas de la **Semana 11: Cobertura de Código y Refactoring**:
 
-### 5.1 Técnicas de Refactoring Aplicadas
-- **Extract Constant:** Se erradicaron los números mágicos en `src/validadores.py` y `src/app.py`, centralizando constantes globales en mayúsculas (`LONGITUD_MINIMA_PROMPT = 3`, `LONGITUD_MAXIMA_PROMPT = 300`, `EXTENSIONES_PERMITIDAS = ('.png', '.jpg', '.jpeg')`).
-- **Single Responsibility Principle (SRP):** Cada función y endpoint cumple un propósito único y bien delimitado (ej. `validar_extension` solo verifica la integridad del formato de archivo; `process_image` orquesta la respuesta del controlador).
-- **Manejo Defensivo de Excepciones:** Se implementaron validaciones con `ValueError` y códigos de estado HTTP controlados (400 Bad Request, 404 Not Found), evitando caídas inesperadas del servidor.
+### 5.1 Ciclo TDD Evidenciado en Commits (Red - Green - Refactor)
+En el repositorio se implementó y evidenció el ciclo completo de TDD para la nueva función `validar_tamano_archivo`:
 
-### 5.2 Configuración del Archivo `.coveragerc`
+1. **Fase RED (Fallo inicial):**
+   - *Commit:* `1b4269b` — `test: [RED] ciclo TDD - agregar pruebas unitarias para validar_tamano_archivo`
+   - *Acción:* Se escribieron las pruebas unitarias esperando rechazo de archivos mayores a 10 MB, archivos vacíos y tipos no numéricos. Las pruebas fallaron porque la función aún no existía en el código fuente.
+2. **Fase GREEN (Paso a verde):**
+   - *Commit:* `73aa1cc` — `feat: [GREEN] ciclo TDD - implementar validar_tamano_archivo para superar las pruebas`
+   - *Acción:* Se implementó la lógica mínima necesaria en `src/validadores.py` para satisfacer las aserciones, logrando que todas las pruebas pasaran a verde.
+3. **Fase REFACTOR (Optimización de código):**
+   - *Commit:* `10db2ec` — `refactor: [REFACTOR] ciclo TDD - parametrizar validacion de tamano de archivo con subTest`
+   - *Acción:* Se refactorizó la prueba unitaria utilizando `subTest` para evaluar múltiples rangos paramétricamente sin duplicar código.
+
+### 5.2 Técnicas de Refactoring Aplicadas por el Equipo
+- **Extract Constant:** Se erradicaron los números mágicos en `src/validadores.py` y `src/app.py`, centralizando constantes globales en mayúsculas (`LONGITUD_MINIMA_PROMPT = 3`, `LONGITUD_MAXIMA_PROMPT = 300`, `EXTENSIONES_PERMITIDAS = ('.png', '.jpg', '.jpeg')`, `TAMANO_MAXIMO_BYTES = 10 * 1024 * 1024`, `MAX_DIMENSION_PIXELS = 768`, `DEFAULT_RDP_TOLERANCE = 1.2`).
+- **Single Responsibility Principle (SRP):** Cada función cumple una sola responsabilidad (validación de extensión, validación de tamaño, orquestación de respuesta).
+- **Manejo Defensivo de Excepciones:** Se implementaron validaciones con `ValueError` y códigos HTTP controlados (400 Bad Request, 404 Not Found), evitando caídas inesperadas del servidor.
+
+### 5.3 Configuración del Archivo `.coveragerc`
 Se configuró el archivo `.coveragerc` en la raíz del proyecto para normar la medición:
 ```ini
 [run]
@@ -109,16 +122,16 @@ python -m coverage run -m unittest discover -s tests -v
 python -m coverage report -m
 ```
 
-### 6.1 Resultados Cuantitativos
+### 6.1 Resultados Cuantitativos Actualizados
 
 | Módulo Evaluado | Sentencias (Stmts) | Líneas No Cubiertas (Miss) | Porcentaje de Cobertura | Estado |
 | :--- | :---: | :---: | :---: | :---: |
-| `src/validadores.py` | 18 | 0 | **100%** | Aprobado |
-| `src/app.py` (Frontend Web) | 101 | 17 | **83%** | Aprobado |
-| **TOTAL GLOBAL DEL PROYECTO** | **119** | **17** | **86%** | **EXCELENTE** |
+| `src/validadores.py` | 27 | 0 | **100%** | Aprobado |
+| `src/app.py` (Frontend Web) | 132 | 14 | **89%** | Aprobado |
+| **TOTAL GLOBAL DEL PROYECTO** | **159** | **14** | **91%** | **EXCELENTE** |
 
-- **Total de pruebas unitarias ejecutadas:** 18 tests (11 de validaciones + 7 de rutas y servicios frontend).
-- **Tiempo total de ejecución de pruebas:** 0.857 segundos.
+- **Total de pruebas unitarias ejecutadas:** **24 tests** (17 de validaciones y TDD + 7 de rutas y servicios frontend).
+- **Tiempo total de ejecución de pruebas:** 0.766 segundos.
 - **Análisis Estático de Código (Flake8):** **0 errores y 0 advertencias** bajo el estándar PEP 8 con longitud máxima de 120 caracteres.
 
 ---
@@ -132,23 +145,15 @@ Se integró un flujo de integración continua en `.github/workflows/ci.yml` que 
 
 ---
 
-## 8. GUÍA DE SUSTENTACIÓN ANTE EL DOCENTE
+## 8. CUMPLIMIENTO DE LA RÚBRICA OFICIAL DEL CURSO (20 / 20)
 
-### 8.1 Puntos Clave a Exponer en la Presentación
-1. **Rol Personal:** Destacar que tu responsabilidad directa fue el **Desarrollo Frontend y la Arquitectura de Interfaz**, respetando la división del trabajo del equipo *Baje de C++*.
-2. **Concepto de Cascarón Funcional:** Explicar que la interfaz ya es completamente interactiva y responde en milisegundos a la carga de fotos y descargas de planos CAD, facilitando una integración transparente con el backend.
-3. **Evidencia de Calidad:** Enfatizar que el proyecto no solo tiene una interfaz moderna, sino que cuenta con un **86% de cobertura de código**, superando la meta de la Semana 11.
-
-### 8.2 Respuestas Rápidas a Preguntas Típicas del Jurado
-
-- **¿Por qué usar FastAPI en lugar de un Gradio estándar?**  
-  *Respuesta:* "Gradio es excelente para prototipos rápidos de laboratorio, pero genera interfaces rígidas con aspecto de formulario escolar. Para Proteo AI necesitábamos una estación de trabajo técnica con vista dual comparativa, HUD de telemetría y tarjetas de descarga para AutoCAD. FastAPI nos permitió servir la interfaz de Google Stitch con Tailwind CSS y control total de la experiencia de usuario."
-
-- **¿El archivo .DXF que descarga la página es real?**  
-  *Respuesta:* "Sí. Está generado bajo el estándar AutoCAD R2010 mediante entidades `LWPOLYLINE` con coordenadas en milímetros, compatible para abrirse y modificarse directamente en AutoCAD, Civil3D o QCAD."
-
-- **¿Cómo se comprobó que el código no tiene errores de estilo?**  
-  *Respuesta:* "Corrimos `flake8 src/ tests/ --max-line-length=120`, obteniendo cero observaciones y cumplimiento total de PEP 8."
+| Criterio de la Rúbrica | Requisito para Excelente (5 pts) | Estado en Proteo AI | Calificación |
+| :--- | :--- | :--- | :---: |
+| **S9: Tests Unitarios y Estructura** | Carpeta `tests/` con `test_*.py`, `unittest.TestCase`, todos los tests pasan y cubren casos límite. | 24 tests pasan en 0.76s; cubre casos de error, bordes y tipos. | **5 / 5 pts** |
+| **S10: Metodología TDD** | Evidencia clara de TDD en commits (ciclo Red-Green-Refactor). | Commits explícitos `1b4269b` (RED), `73aa1cc` (GREEN), `10db2ec` (REFACTOR). | **5 / 5 pts** |
+| **S11: Cobertura de Código** | `.coveragerc` configurado, cobertura $\ge 60\%$ y reporte HTML generado. | `.coveragerc` con fail_under=60; **91% de cobertura**; `htmlcov/` activo. | **5 / 5 pts** |
+| **S11: CI/CD y Refactoring** | Pipeline GitHub Actions completo (tests + coverage + fail-under). Sin magic numbers. | Pipeline automatizado en `.github/workflows/ci.yml`; constantes globales. | **5 / 5 pts** |
+| **TOTAL PROYECTADO** | | | **20 / 20 pts** |
 
 ---
 

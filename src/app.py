@@ -174,7 +174,8 @@ def generar_svg(poligonos, ancho, alto, grosor_linea, ruta_svg):
     cuerpo = "\n".join(poligonos)
     contenido = f"""{encabezado}
   <rect width="100%" height="100%" fill="{SVG_BACKGROUND_COLOR}"/>
-  <g stroke="{SVG_STROKE_COLOR}" stroke-width="{grosor_linea}" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <g stroke="{SVG_STROKE_COLOR}" stroke-width="{grosor_linea}" fill="none"
+     stroke-linecap="round" stroke-linejoin="round">
 {cuerpo}
   </g>
 </svg>"""
