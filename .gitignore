@@ -32,9 +32,8 @@ data/processed/*
 
 # Archivos temporales generados por la app y CAD
 temp/
-outputs/*.png
-outputs/*.dxf
-outputs/*.svg
+outputs/*
+!outputs/.gitkeep
 
 # Documentos y presentaciones locales
 docs/
