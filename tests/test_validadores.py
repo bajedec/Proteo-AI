@@ -24,6 +24,11 @@ class TestValidarPrompt(unittest.TestCase):
         with self.assertRaises(ValueError):
             validar_prompt("x" * 1000)
 
+    def test_espacios_no_cuentan_para_el_largo(self):
+        """El largo se mide despues de quitar espacios sobrantes."""
+        with self.assertRaisesRegex(ValueError, "demasiado corto"):
+            validar_prompt("  ab  ")
+
 
 class TestValidarExtension(unittest.TestCase):
     """Pruebas de validar_extension: solo se permiten .png, .jpg y .jpeg."""
