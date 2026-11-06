@@ -24,10 +24,12 @@ def validar_extension(nombre_archivo):
     """Verifica que el archivo sea una imagen permitida."""
     if not isinstance(nombre_archivo, str):
         raise ValueError("El nombre de archivo debe ser texto")
-    if not nombre_archivo.lower().endswith(EXTENSIONES_PERMITIDAS):
+    nombre_minusculas = nombre_archivo.lower()
+    if not nombre_minusculas.endswith(EXTENSIONES_PERMITIDAS):
         raise ValueError("Extension de archivo no permitida")
+    if nombre_minusculas in EXTENSIONES_PERMITIDAS:
+        raise ValueError("El archivo debe tener un nombre antes de la extension")
     return nombre_archivo
-
 
 def validar_tamano_archivo(tamano_bytes):
     """Verifica que el peso del archivo en bytes no exceda el limite permitido."""
