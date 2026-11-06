@@ -31,6 +31,7 @@ def validar_extension(nombre_archivo):
         raise ValueError("El archivo debe tener un nombre antes de la extension")
     return nombre_archivo
 
+
 def validar_tamano_archivo(tamano_bytes):
     """Verifica que el peso del archivo en bytes no exceda el limite permitido."""
     if not isinstance(tamano_bytes, (int, float)) or isinstance(tamano_bytes, bool):

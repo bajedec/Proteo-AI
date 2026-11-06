@@ -5,6 +5,7 @@ from src.validadores import (
     validar_prompt,
     validar_tamano_archivo,
     validar_tolerancia_rdp,
+    EXTENSIONES_PERMITIDAS,
 )
 
 
@@ -32,16 +33,16 @@ class TestValidarPrompt(unittest.TestCase):
 
 class TestValidarExtension(unittest.TestCase):
     """Pruebas de validar_extension: solo se permiten .png, .jpg y .jpeg."""
- 
+
     def test_extension_valida(self):
         """Una extension permitida (aunque este en mayusculas) se acepta."""
         self.assertEqual(validar_extension("foto.PNG"), "foto.PNG")
- 
+
     def test_extension_jpeg_valida(self):
         """Tambien se aceptan .jpg y .jpeg."""
         self.assertEqual(validar_extension("foto.jpg"), "foto.jpg")
         self.assertEqual(validar_extension("foto.jpeg"), "foto.jpeg")
- 
+
     def test_extensiones_no_permitidas(self):
         """PDF, texto, sin extension, vacio, doble extension y espacio final."""
         casos = ["documento.pdf", "notas.txt", "archivo", "", "foto.png.exe", "foto.png "]
@@ -49,20 +50,19 @@ class TestValidarExtension(unittest.TestCase):
             with self.subTest(nombre=nombre):
                 with self.assertRaisesRegex(ValueError, "Extension de archivo no permitida"):
                     validar_extension(nombre)
- 
+
     def test_solo_extension_sin_nombre_rechazada(self):
         """'.png' no tiene nombre de archivo: no es valido."""
         for extension in EXTENSIONES_PERMITIDAS:
             with self.subTest(extension=extension):
                 with self.assertRaisesRegex(ValueError, "nombre antes de la extension"):
                     validar_extension(extension)
- 
+
     def test_extension_no_texto(self):
         for valor in (12345, None):
             with self.subTest(valor=valor):
                 with self.assertRaisesRegex(ValueError, "debe ser texto"):
                     validar_extension(valor)
-
 
 
 class TestValidarTamanoArchivo(unittest.TestCase):
